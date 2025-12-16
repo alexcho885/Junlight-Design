@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { PRICING_PLANS } from '../constants';
 import { PricingTag } from '../types';

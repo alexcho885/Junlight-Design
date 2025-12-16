@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const Hero: React.FC = () => {
   return (
@@ -12,21 +12,18 @@ const Hero: React.FC = () => {
           <div className="absolute -inset-2 bg-gradient-to-r from-brand-teal/30 via-brand-purple/20 to-brand-orange/30 rounded-[2rem] blur-xl opacity-60 group-hover:opacity-80 transition duration-1000"></div>
           
           <img 
-            src="images/banner.png" 
+            src="/images/banner.png" 
             alt="Jun Light Design - By the name of light, we design the purity of warmth" 
             className="relative w-full h-auto aspect-[16/9] lg:aspect-[2.35/1] object-cover rounded-[2rem] shadow-2xl ring-1 ring-white/50"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.onerror = null;
-              target.src = "https://picsum.photos/1200/600?random=banner";
-            }}
+            // Note: In Next.js with static export or standard image tag, onError handling for local images is tricky. 
+            // If using next/image, it handles optimization. Keeping <img> for simplicity in migration.
           />
         </div>
 
         {/* Action Buttons - Centered below */}
         <div className="mt-12 flex flex-col sm:flex-row gap-5 w-full sm:w-auto z-10">
           <Link 
-            to="/portfolio"
+            href="/portfolio"
             className="px-8 py-3.5 rounded-full text-white font-medium text-lg bg-gradient-brand shadow-lg hover:shadow-brand-teal/40 hover:translate-y-[-2px] transition-all duration-300 flex items-center justify-center gap-3"
           >
             <i className="fa-solid fa-layer-group"></i>
@@ -34,7 +31,7 @@ const Hero: React.FC = () => {
           </Link>
           
           <Link 
-            to="/pricing"
+            href="/pricing"
             className="px-8 py-3.5 rounded-full text-brand-text font-medium text-lg bg-white/80 backdrop-blur-sm border border-brand-teal/20 shadow-md hover:bg-white hover:shadow-xl hover:translate-y-[-2px] transition-all duration-300 flex items-center justify-center gap-3"
           >
             <i className="fa-solid fa-wand-magic-sparkles text-brand-orange"></i>

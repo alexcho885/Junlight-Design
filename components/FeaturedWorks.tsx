@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { PORTFOLIO_ITEMS, PORTFOLIO_CATEGORIES } from '../constants';
 
 const FeaturedWorks: React.FC = () => {
@@ -45,7 +45,7 @@ const FeaturedWorks: React.FC = () => {
 
         <div className="text-center">
           <Link 
-            to="/portfolio"
+            href="/portfolio"
             className="inline-flex items-center gap-2 px-8 py-3 rounded-full border-2 border-brand-teal/20 text-brand-teal font-medium hover:bg-brand-teal hover:text-white transition-all duration-300"
           >
             <span>查看更多作品</span>

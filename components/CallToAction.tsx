@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 const CallToAction: React.FC = () => {
   return (
@@ -17,7 +17,7 @@ const CallToAction: React.FC = () => {
           我們都準備好成為您的最佳夥伴。
         </p>
         <Link 
-          to="/contact"
+          href="/contact"
           className="inline-flex items-center justify-center px-10 py-4 bg-white text-brand-teal font-bold text-lg rounded-full shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300"
         >
           立即開始專案
