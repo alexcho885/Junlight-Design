@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { urlFor } from '@/lib/sanity';
+import { PORTFOLIO_ITEMS } from '@/constants';
 
 // 定義專案型別
 export interface Project {
@@ -10,7 +11,7 @@ export interface Project {
   title: string;
   slug: { current: string };
   category: string;
-  mainImage: any;
+  mainImage: any; // 支援 Sanity Image Object 或 字串 URL
   publishedAt: string;
 }
 
@@ -30,13 +31,24 @@ interface PortfolioListProps {
 
 const PortfolioList: React.FC<PortfolioListProps> = ({ projects }) => {
   const [activeCategory, setActiveCategory] = useState('all');
-  // 控制是否開始顯示動畫的旗標
-  const [showContent, setShowContent] = useState(false);
+
+  // 資料整合邏輯：如果 Sanity 沒有回傳資料 (projects 為空)，則使用 constants 中的靜態資料作為備案
+  // 這能避免在未設定 API Key 的環境中出現白畫面
+  const displayProjects: Project[] = projects.length > 0 
+    ? projects 
+    : PORTFOLIO_ITEMS.map(item => ({
+        _id: `static-${item.id}`,
+        title: item.title,
+        slug: { current: `static-${item.id}` }, // 簡單產生 slug
+        category: item.category,
+        mainImage: item.image, // 這裡會是字串 URL
+        publishedAt: new Date().toISOString()
+      }));
 
   // 篩選邏輯
   const filteredProjects = activeCategory === 'all'
-    ? projects
-    : projects.filter(project => project.category === activeCategory);
+    ? displayProjects
+    : displayProjects.filter(project => project.category === activeCategory);
 
   // 取得分類顯示名稱的 Helper
   const getCategoryName = (catId: string) => {
@@ -44,21 +56,24 @@ const PortfolioList: React.FC<PortfolioListProps> = ({ projects }) => {
     return found ? found.name : catId;
   };
 
-  // 當分類切換或資料載入時，觸發動畫
-  useEffect(() => {
-    setShowContent(false);
-    // 使用極短的延遲來觸發 CSS Transition，確保內容一定會顯示
-    const timer = setTimeout(() => {
-      setShowContent(true);
-    }, 50);
-
-    return () => clearTimeout(timer);
-  }, [activeCategory, projects]);
+  // 圖片網址處理 Helper
+  const getImageUrl = (imageSource: any) => {
+    if (!imageSource) return null;
+    // 如果是字串 (靜態資料)，直接回傳
+    if (typeof imageSource === 'string') return imageSource;
+    // 如果是 Sanity 物件，使用 urlFor
+    try {
+      return urlFor(imageSource).width(800).height(600).url();
+    } catch (e) {
+      console.error('Image URL generation failed:', e);
+      return null;
+    }
+  };
 
   return (
     <>
       {/* Filter Tabs */}
-      <div className="flex flex-wrap justify-center gap-3 mb-16">
+      <div className="flex flex-wrap justify-center gap-3 mb-16 animate-fadeInUp">
         {CATEGORIES.map((cat) => (
           <button
             key={cat.id}
@@ -77,60 +92,63 @@ const PortfolioList: React.FC<PortfolioListProps> = ({ projects }) => {
       {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[400px]">
         {filteredProjects.length > 0 ? (
-          filteredProjects.map((item, index) => (
-            <Link 
-              href={`/portfolio/${item.slug.current}`}
-              key={item._id}
-              // 使用簡單的 CSS 類別切換，依賴 showContent 狀態
-              // delay 屬性創造階梯式出現的效果
-              className={`group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:scale-[1.02] cursor-pointer block
-                transform transition-all duration-700 ease-out
-                ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
-              `}
-              style={{ transitionDelay: `${index * 100}ms` }}
-            >
-              {/* Image Container */}
-              <div className="aspect-[4/3] overflow-hidden bg-gray-100">
-                {item.mainImage ? (
-                  <img 
-                    src={urlFor(item.mainImage).width(800).height(600).url()} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
-                    No Image
-                  </div>
-                )}
-              </div>
+          filteredProjects.map((item, index) => {
+            const imageUrl = getImageUrl(item.mainImage);
 
-              {/* Overlay Content */}
-              <div className="absolute inset-0 bg-[#2E5C6E]/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-center items-center text-center p-6 backdrop-blur-sm">
-                <span className="text-[#E08A66] font-medium text-sm tracking-widest mb-2 uppercase">
-                  {getCategoryName(item.category)}
-                </span>
-                <h3 className="text-white text-xl font-bold font-serif mb-6">
-                  {item.title}
-                </h3>
-                <span className="px-6 py-2 border border-white text-white rounded-full text-sm">
-                  查看詳情
-                </span>
-              </div>
+            return (
+              <Link 
+                href={`/portfolio/${item.slug.current}`}
+                key={item._id}
+                // 使用 Tailwind 的 animate-fadeInUp，確保元素預設是顯示的，不依賴 JS 狀態切換 opacity
+                className="group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:scale-[1.02] cursor-pointer block animate-fadeInUp"
+                style={{ 
+                  animationDelay: `${index * 100}ms`,
+                  animationFillMode: 'both' // 確保動畫結束後保持狀態
+                }}
+              >
+                {/* Image Container */}
+                <div className="aspect-[4/3] overflow-hidden bg-gray-100">
+                  {imageUrl ? (
+                    <img 
+                      src={imageUrl} 
+                      alt={item.title} 
+                      className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                      No Image
+                    </div>
+                  )}
+                </div>
 
-              {/* Mobile/Default Label */}
-              <div className="p-5 lg:hidden">
-                <p className="text-xs text-[#2E5C6E] font-medium mb-1">
-                  {getCategoryName(item.category)}
-                </p>
-                <h3 className="text-gray-800 font-bold">
-                  {item.title}
-                </h3>
-              </div>
-            </Link>
-          ))
+                {/* Overlay Content */}
+                <div className="absolute inset-0 bg-[#2E5C6E]/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-center items-center text-center p-6 backdrop-blur-sm">
+                  <span className="text-[#E08A66] font-medium text-sm tracking-widest mb-2 uppercase">
+                    {getCategoryName(item.category)}
+                  </span>
+                  <h3 className="text-white text-xl font-bold font-serif mb-6">
+                    {item.title}
+                  </h3>
+                  <span className="px-6 py-2 border border-white text-white rounded-full text-sm">
+                    查看詳情
+                  </span>
+                </div>
+
+                {/* Mobile/Default Label */}
+                <div className="p-5 lg:hidden">
+                  <p className="text-xs text-[#2E5C6E] font-medium mb-1">
+                    {getCategoryName(item.category)}
+                  </p>
+                  <h3 className="text-gray-800 font-bold">
+                    {item.title}
+                  </h3>
+                </div>
+              </Link>
+            );
+          })
         ) : (
-          <div className={`col-span-full text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center transition-all duration-500 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center animate-fadeInUp">
             <div className="text-gray-300 text-6xl mb-4">
               <i className="fa-regular fa-folder-open"></i>
             </div>
