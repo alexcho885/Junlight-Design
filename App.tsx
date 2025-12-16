@@ -1,1 +1,0 @@
-// Deprecated. Components have been moved to app/ directory.

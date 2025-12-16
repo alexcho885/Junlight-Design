@@ -9,11 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "next": "^16.0.10",
     "react": "^19.2.3",
-    "@sanity/image-url": "^2.0.2",
+    "next": "^16.0.10",
+    "sanity": "^4.22.0",
     "next-sanity": "^11.6.11",
-    "sanity": "^4.22.0"
+    "@sanity/image-url": "^2.0.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
