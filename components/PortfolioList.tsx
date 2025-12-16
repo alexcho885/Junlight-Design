@@ -30,6 +30,9 @@ interface PortfolioListProps {
 
 const PortfolioList: React.FC<PortfolioListProps> = ({ projects }) => {
   const [activeCategory, setActiveCategory] = useState('all');
+  // 使用 Set 來追蹤哪些項目已經進入視窗需要顯示
+  const [visibleItems, setVisibleItems] = useState<Set<string>>(new Set());
+  
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   // 篩選邏輯
@@ -43,32 +46,45 @@ const PortfolioList: React.FC<PortfolioListProps> = ({ projects }) => {
     return found ? found.name : catId;
   };
 
+  // 當分類改變時，重置可見狀態，讓動畫重新播放
+  useEffect(() => {
+    setVisibleItems(new Set());
+  }, [activeCategory]);
+
   // 滾動觸發動畫 (Scroll Reveal)
   useEffect(() => {
-    // 重置 Observer
+    // 確保在瀏覽器環境執行
+    if (typeof window === 'undefined') return;
+
     if (observerRef.current) observerRef.current.disconnect();
 
     observerRef.current = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          // 當元素進入視窗時，移除隱藏並加入動畫 class
-          entry.target.classList.remove('opacity-0');
-          entry.target.classList.add('animate-fadeInUp');
-          
-          // 動畫觸發後停止觀察該元素
-          observerRef.current?.unobserve(entry.target);
+          const id = entry.target.getAttribute('data-id');
+          if (id) {
+            setVisibleItems((prev) => {
+              // 如果已經有了就不更新，避免重複渲染
+              if (prev.has(id)) return prev;
+              const newSet = new Set(prev);
+              newSet.add(id);
+              return newSet;
+            });
+            // 動畫觸發後停止觀察該元素
+            observerRef.current?.unobserve(entry.target);
+          }
         }
       });
     }, {
-      threshold: 0.1, // 露出 10% 時觸發
-      rootMargin: '50px' // 提早一點點載入
+      threshold: 0.1, 
+      rootMargin: '50px' 
     });
 
     const items = document.querySelectorAll('.portfolio-item');
     items.forEach((item) => observerRef.current?.observe(item));
 
     return () => observerRef.current?.disconnect();
-  }, [filteredProjects, activeCategory]);
+  }, [filteredProjects, activeCategory]); // 依賴 filteredProjects 確保 DOM 更新後重新綁定
 
   return (
     <>
@@ -96,10 +112,12 @@ const PortfolioList: React.FC<PortfolioListProps> = ({ projects }) => {
             <Link 
               href={`/portfolio/${item.slug.current}`}
               key={item._id}
-              // 初始狀態設為 opacity-0，並加入 portfolio-item 供 Observer 辨識
-              // 移除預設的 animate-fadeInUp，改由 JS 動態加入
-              className="portfolio-item group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 cursor-pointer opacity-0"
-              // 使用模運算 (modulo) 讓每一行 (3欄) 的元素依序延遲，而非隨著 index 無限增加延遲時間
+              data-id={item._id}
+              // 使用 React State 控制 class，避免 React Re-render 覆蓋手動修改的 class
+              // 初始為 opacity-0，進入視窗後變為 animate-fadeInUp
+              className={`portfolio-item group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:scale-[1.02] transition-all duration-500 cursor-pointer ${
+                visibleItems.has(item._id) ? 'animate-fadeInUp' : 'opacity-0'
+              }`}
               style={{ animationDelay: `${(index % 3) * 150}ms` }}
             >
               {/* Image Container */}
