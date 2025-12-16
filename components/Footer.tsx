@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
             <div className="mb-8 w-fit">
                  {/* White version of logo */}
                  <img 
-                    src="images/logo.png" 
+                    src="/images/logo.png" 
                     alt="Jun Light Design" 
                     className="h-20 w-auto brightness-0 invert opacity-90 object-contain"
                     onError={(e) => {

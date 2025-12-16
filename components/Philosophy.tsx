@@ -31,7 +31,7 @@ const Philosophy: React.FC = () => {
                
                <div className="relative glass-card rounded-[2.5rem] p-8 shadow-xl flex items-center justify-center aspect-square lg:aspect-[4/3] overflow-hidden">
                   <img 
-                    src="images/logo.png" 
+                    src="/images/logo.png" 
                     alt="Jun Light Design Logo Detail" 
                     className="w-full h-full object-contain drop-shadow-lg transform transition-transform duration-700 group-hover:scale-105"
                     onError={(e) => {

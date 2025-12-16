@@ -7,6 +7,20 @@ import Footer from '@/components/Footer';
 export const metadata: Metadata = {
   title: '純光設計 Jun Light Design | 以光為名，設計每一份純粹的溫度',
   description: 'Official single-page website for Jun Light Design featuring services, pricing, and portfolio showcases.',
+  openGraph: {
+    title: '純光設計 Jun Light Design',
+    description: '以光為名，設計每一份純粹的溫度。',
+    images: [
+      {
+        url: '/images/banner.png',
+        width: 1200,
+        height: 630,
+        alt: 'Jun Light Design Banner',
+      },
+    ],
+    locale: 'zh_TW',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

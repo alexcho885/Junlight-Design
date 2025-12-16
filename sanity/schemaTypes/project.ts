@@ -1,17 +1,15 @@
-import { defineField, defineType } from 'sanity'
-
-export default defineType({
+export default {
   name: 'project',
   title: '作品集 (Project)',
   type: 'document',
   fields: [
-    defineField({
+    {
       name: 'title',
       title: '專案名稱',
       type: 'string',
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
+      validation: (rule: any) => rule.required(),
+    },
+    {
       name: 'slug',
       title: '網址代稱 (Slug)',
       type: 'slug',
@@ -19,9 +17,9 @@ export default defineType({
         source: 'title',
         maxLength: 96,
       },
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
+      validation: (rule: any) => rule.required(),
+    },
+    {
       name: 'category',
       title: '分類',
       type: 'string',
@@ -34,9 +32,9 @@ export default defineType({
           { title: '插畫貼圖 (Illustration)', value: 'illustration' },
         ],
       },
-      validation: (rule) => rule.required(),
-    }),
-    defineField({
+      validation: (rule: any) => rule.required(),
+    },
+    {
       name: 'mainImage',
       title: '主視覺圖片',
       type: 'image',
@@ -50,14 +48,14 @@ export default defineType({
           title: '替代文字 (Alt Text)',
         }
       ]
-    }),
-    defineField({
+    },
+    {
       name: 'publishedAt',
       title: '發布時間',
       type: 'datetime',
       initialValue: () => new Date().toISOString(),
-    }),
-    defineField({
+    },
+    {
       name: 'body',
       title: '專案詳情',
       type: 'array',
@@ -68,6 +66,6 @@ export default defineType({
           options: { hotspot: true },
         },
       ],
-    }),
+    },
   ],
-})
+}
