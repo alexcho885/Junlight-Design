@@ -9,7 +9,7 @@ export const client = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: false, // 設為 false 可以讀取最新數據，生產環境建議設為 true
+  useCdn: false, // 設為 false 可以讀取最新數據，生產環境建議設為 true 以利用快取
 })
 
 // 圖片網址產生器 helper
