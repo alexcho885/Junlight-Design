@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { urlFor } from '@/lib/sanity';
 
@@ -30,11 +30,8 @@ interface PortfolioListProps {
 
 const PortfolioList: React.FC<PortfolioListProps> = ({ projects }) => {
   const [activeCategory, setActiveCategory] = useState('all');
-  const [visibleItems, setVisibleItems] = useState<Set<string>>(new Set());
-  
-  // 使用 Map 儲存 DOM 元素的引用，比 querySelector 更可靠
-  const itemsRef = useRef<Map<string, HTMLAnchorElement | null>>(new Map());
-  const observerRef = useRef<IntersectionObserver | null>(null);
+  // 控制是否開始顯示動畫的旗標
+  const [showContent, setShowContent] = useState(false);
 
   // 篩選邏輯
   const filteredProjects = activeCategory === 'all'
@@ -47,54 +44,16 @@ const PortfolioList: React.FC<PortfolioListProps> = ({ projects }) => {
     return found ? found.name : catId;
   };
 
-  // 當分類改變時，重置可見狀態
+  // 當分類切換或資料載入時，觸發動畫
   useEffect(() => {
-    setVisibleItems(new Set());
-    // 強制重繪的小技巧：確保 React 在狀態清除後重新執行 Effect
-  }, [activeCategory]);
+    setShowContent(false);
+    // 使用極短的延遲來觸發 CSS Transition，確保內容一定會顯示
+    const timer = setTimeout(() => {
+      setShowContent(true);
+    }, 50);
 
-  // 滾動觸發動畫 (Scroll Reveal)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    // 清理舊的 observer
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
-
-    // 建立新的 observer
-    observerRef.current = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const id = entry.target.getAttribute('data-id');
-          if (id) {
-            setVisibleItems((prev) => {
-              if (prev.has(id)) return prev;
-              const newSet = new Set(prev);
-              newSet.add(id);
-              return newSet;
-            });
-            // 觸發後即停止觀察該元素
-            observerRef.current?.unobserve(entry.target);
-          }
-        }
-      });
-    }, {
-      threshold: 0.1, // 只要露出 10% 就觸發
-      rootMargin: '50px' // 預先載入距離
-    });
-
-    // 觀察所有存在於 ref Map 中的元素
-    itemsRef.current.forEach((el) => {
-      if (el) observerRef.current?.observe(el);
-    });
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [filteredProjects, activeCategory]); // 依賴 filteredProjects 確保資料更新後重新綁定
+    return () => clearTimeout(timer);
+  }, [activeCategory, projects]);
 
   return (
     <>
@@ -118,66 +77,60 @@ const PortfolioList: React.FC<PortfolioListProps> = ({ projects }) => {
       {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 min-h-[400px]">
         {filteredProjects.length > 0 ? (
-          filteredProjects.map((item, index) => {
-            const isVisible = visibleItems.has(item._id);
-            return (
-              <Link 
-                href={`/portfolio/${item.slug.current}`}
-                key={item._id}
-                data-id={item._id}
-                ref={(el) => {
-                  if (el) itemsRef.current.set(item._id, el);
-                  else itemsRef.current.delete(item._id);
-                }}
-                // 改用 CSS Transition 實現位移與透明度變化，比 keyframes 更穩定
-                className={`group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:scale-[1.02] cursor-pointer
-                  transform transition-all duration-700 ease-out
-                  ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}
-                `}
-                style={{ transitionDelay: `${(index % 3) * 100}ms` }}
-              >
-                {/* Image Container */}
-                <div className="aspect-[4/3] overflow-hidden bg-gray-100">
-                  {item.mainImage ? (
-                    <img 
-                      src={urlFor(item.mainImage).width(800).height(600).url()} 
-                      alt={item.title} 
-                      className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
-                      No Image
-                    </div>
-                  )}
-                </div>
+          filteredProjects.map((item, index) => (
+            <Link 
+              href={`/portfolio/${item.slug.current}`}
+              key={item._id}
+              // 使用簡單的 CSS 類別切換，依賴 showContent 狀態
+              // delay 屬性創造階梯式出現的效果
+              className={`group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:scale-[1.02] cursor-pointer block
+                transform transition-all duration-700 ease-out
+                ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
+              `}
+              style={{ transitionDelay: `${index * 100}ms` }}
+            >
+              {/* Image Container */}
+              <div className="aspect-[4/3] overflow-hidden bg-gray-100">
+                {item.mainImage ? (
+                  <img 
+                    src={urlFor(item.mainImage).width(800).height(600).url()} 
+                    alt={item.title} 
+                    className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                    No Image
+                  </div>
+                )}
+              </div>
 
-                {/* Overlay Content */}
-                <div className="absolute inset-0 bg-[#2E5C6E]/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-center items-center text-center p-6 backdrop-blur-sm">
-                  <span className="text-[#E08A66] font-medium text-sm tracking-widest mb-2 uppercase">
-                    {getCategoryName(item.category)}
-                  </span>
-                  <h3 className="text-white text-xl font-bold font-serif mb-6">
-                    {item.title}
-                  </h3>
-                  <span className="px-6 py-2 border border-white text-white rounded-full text-sm">
-                    查看詳情
-                  </span>
-                </div>
+              {/* Overlay Content */}
+              <div className="absolute inset-0 bg-[#2E5C6E]/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-center items-center text-center p-6 backdrop-blur-sm">
+                <span className="text-[#E08A66] font-medium text-sm tracking-widest mb-2 uppercase">
+                  {getCategoryName(item.category)}
+                </span>
+                <h3 className="text-white text-xl font-bold font-serif mb-6">
+                  {item.title}
+                </h3>
+                <span className="px-6 py-2 border border-white text-white rounded-full text-sm">
+                  查看詳情
+                </span>
+              </div>
 
-                {/* Mobile/Default Label */}
-                <div className="p-5 lg:hidden">
-                  <p className="text-xs text-[#2E5C6E] font-medium mb-1">
-                    {getCategoryName(item.category)}
-                  </p>
-                  <h3 className="text-gray-800 font-bold">
-                    {item.title}
-                  </h3>
-                </div>
-              </Link>
-            );
-          })
+              {/* Mobile/Default Label */}
+              <div className="p-5 lg:hidden">
+                <p className="text-xs text-[#2E5C6E] font-medium mb-1">
+                  {getCategoryName(item.category)}
+                </p>
+                <h3 className="text-gray-800 font-bold">
+                  {item.title}
+                </h3>
+              </div>
+            </Link>
+          ))
         ) : (
-          <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center animate-fadeInUp">
+          <div className={`col-span-full text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center transition-all duration-500 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
             <div className="text-gray-300 text-6xl mb-4">
               <i className="fa-regular fa-folder-open"></i>
             </div>
