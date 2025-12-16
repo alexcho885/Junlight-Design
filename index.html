@@ -1,83 +1,20 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>純光設計 Jun Light Design | 以光為名，設計每一份純粹的溫度</title>
-    
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                teal: '#2E5C6E', // Deep Slate Teal from banner left
-                orange: '#E08A66', // Soft Coral from leaves
-                purple: '#866690', // Muted Purple from "Light" text
-                bg: '#F8FBFC', // Very light cool mist background
-                text: '#2D3748',
-              }
-            },
-            fontFamily: {
-              sans: ['"Noto Sans TC"', 'sans-serif'],
-              serif: ['"Noto Serif TC"', 'serif'],
-            },
-            borderRadius: {
-              '3xl': '1.5rem',
-              '4xl': '2rem',
-            },
-            backgroundImage: {
-              'gradient-brand': 'linear-gradient(135deg, #2E5C6E 0%, #866690 50%, #E08A66 100%)',
-              'gradient-soft': 'linear-gradient(to right, #EEF2F6, #FDF2F0)',
-            }
-          }
-        }
-      }
-    </script>
-    <style>
-      /* Smooth scrolling */
-      html {
-        scroll-behavior: smooth;
-      }
-      .glass-card {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-      }
-    </style>
-  <script type="importmap">
+<script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@18.3.1",
-    "react/": "https://esm.sh/react@18.3.1/",
-    "react-dom": "https://esm.sh/react-dom@18.3.1",
-    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
-    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?external=react,react-dom",
-    "@remix-run/router": "https://esm.sh/@remix-run/router@1.15.3",
     "next/": "https://esm.sh/next@^16.0.10/",
-    "sanity/": "https://esm.sh/sanity@^4.21.1/",
-    "sanity": "https://esm.sh/sanity@^4.21.1",
-    "next-sanity": "https://esm.sh/next-sanity@^11.6.11",
+    "next": "https://esm.sh/next@^16.0.10",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
     "@sanity/image-url": "https://esm.sh/@sanity/image-url@^2.0.2",
-    "next": "https://esm.sh/next@^16.0.10"
+    "next-sanity": "https://esm.sh/next-sanity@^11.6.11",
+    "sanity/": "https://esm.sh/sanity@^4.22.0/",
+    "sanity": "https://esm.sh/sanity@^4.22.0"
   }
 }
 </script>
-</head>
-  <body class="bg-brand-bg text-brand-text font-sans antialiased selection:bg-brand-teal selection:text-white">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
-</html>
+<!-- 
+  This file is deprecated. 
+  The project has been migrated to Next.js App Router.
+  Please use 'npm run dev' or 'next dev' to start the application.
+  The entry point is now app/layout.tsx.
+-->
